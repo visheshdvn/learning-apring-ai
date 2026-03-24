@@ -14,27 +14,33 @@ import static org.springframework.ai.chat.memory.ChatMemory.CONVERSATION_ID;
 @RequestMapping("/api/rag")
 public class RAGController
 {
-    private final ChatClient chatClient;
-    private final VectorStore vectorStore;
+	private final ChatClient chatClient;
+	private final ChatClient webSearchChatClient;
+	private final VectorStore vectorStore;
 
-    @Value("classpath:/promptTemplates/systemPromptRandomDataTemplate.st")
-    private Resource promptTemplate;
+	@Value("classpath:/promptTemplates/systemPromptRandomDataTemplate.st")
+	private Resource promptTemplate;
 
-    @Value("classpath:/promptTemplates/systemPromptTemplate.st")
-    private Resource hrSystemTemplate;
+	@Value("classpath:/promptTemplates/systemPromptTemplate.st")
+	private Resource hrSystemTemplate;
 
-    public RAGController(@Qualifier("chatMemoryChatClient") ChatClient chatClient, VectorStore vectorStore)
-    {
-        this.chatClient = chatClient;
-        this.vectorStore = vectorStore;
-    }
+	public RAGController(
+			@Qualifier("chatMemoryChatClient") ChatClient chatClient,
+			@Qualifier("webSearchRAGChatClient") ChatClient webSearchChatClient,
+			VectorStore vectorStore
+	)
+	{
+		this.chatClient = chatClient;
+		this.vectorStore = vectorStore;
+		this.webSearchChatClient = webSearchChatClient;
+	}
 
-    @GetMapping("/random/chat")
-    public ResponseEntity<String> randomChat(
-            @RequestHeader("username") String username,
-            @RequestParam("message") String message
-    )
-    {
+	@GetMapping("/random/chat")
+	public ResponseEntity<String> randomChat(
+			@RequestHeader("username") String username,
+			@RequestParam("message") String message
+	)
+	{
 //        SearchRequest searchRequest = SearchRequest.builder().query(message).topK(3).similarityThreshold(0.5).build();
 //
 //        List<Document> similarDocs = vectorStore.similaritySearch(searchRequest);
@@ -44,23 +50,23 @@ public class RAGController
 //                                           .collect(Collectors.joining(System.lineSeparator()));
 
 
-        String answer = chatClient.prompt()
+		String answer = chatClient.prompt()
 //                                  .system(promptSystemSpec -> promptSystemSpec.text(promptTemplate)
 //                                                                              .param("documents", similarContext))
-                                  .advisors(a -> a.param(CONVERSATION_ID, username))
-                                  .user(message)
-                                  .call()
-                                  .content();
+								  .advisors(a -> a.param(CONVERSATION_ID, username))
+								  .user(message)
+								  .call()
+								  .content();
 
-        return ResponseEntity.ok(answer);
-    }
+		return ResponseEntity.ok(answer);
+	}
 
-    @GetMapping("/document/chat")
-    public ResponseEntity<String> documentChat(
-            @RequestHeader("username") String username,
-            @RequestParam("message") String message
-    )
-    {
+	@GetMapping("/document/chat")
+	public ResponseEntity<String> documentChat(
+			@RequestHeader("username") String username,
+			@RequestParam("message") String message
+	)
+	{
 //        SearchRequest searchRequest = SearchRequest.builder().query(message).topK(3).similarityThreshold(0.5).build();
 //
 //        List<Document> similarDocs = vectorStore.similaritySearch(searchRequest);
@@ -70,14 +76,27 @@ public class RAGController
 //                                           .collect(Collectors.joining(System.lineSeparator()));
 
 
-        String answer = chatClient.prompt()
+		String answer = chatClient.prompt()
 //                                  .system(promptSystemSpec -> promptSystemSpec.text(hrSystemTemplate)
 //                                                                              .param("documents", similarContext))
-                                  .advisors(a -> a.param(CONVERSATION_ID, username))
-                                  .user(message)
-                                  .call()
-                                  .content();
+								  .advisors(a -> a.param(CONVERSATION_ID, username))
+								  .user(message)
+								  .call()
+								  .content();
 
-        return ResponseEntity.ok(answer);
-    }
+		return ResponseEntity.ok(answer);
+	}
+
+	@GetMapping("/web-search/chat")
+	public ResponseEntity<String> webSearchChat(
+			@RequestHeader("username")
+			String username, @RequestParam("message") String message
+	)
+	{
+		String answer = webSearchChatClient.prompt()
+										   .advisors(a -> a.param(CONVERSATION_ID, username))
+										   .user(message)
+										   .call().content();
+		return ResponseEntity.ok(answer);
+	}
 }
