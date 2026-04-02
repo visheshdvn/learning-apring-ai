@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.eazybytes</groupId>
-	<artifactId>openai</artifactId>
+	<artifactId>spring-ai</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>openai</name>
+	<name>spring-ai</name>
 	<description>Demo project for Spring AI and Open AI</description>
 	<url/>
 	<licenses>

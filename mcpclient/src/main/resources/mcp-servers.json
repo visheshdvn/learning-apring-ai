@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "/home/vishesh/.nvm/versions/node/v22.22.1/bin/npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "fs-mcp-server-directory"
+      ]
+    }
+  }
+}
